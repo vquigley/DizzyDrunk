@@ -41,7 +41,7 @@ public class PlayerDb {
         };
 
         String sortOrder =
-                PlayerData._ID + " DESC";
+                PlayerData._ID + " ASC";
 
         Cursor c = db.query(
                 PlayerData.TABLE_NAME,  // The table to query

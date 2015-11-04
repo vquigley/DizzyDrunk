@@ -1,8 +1,12 @@
 package com.grangewood.dizzydrunk.data;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Matrix;
+import android.graphics.RectF;
 import android.graphics.Shader;
+import android.media.ThumbnailUtils;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -11,6 +15,9 @@ import android.os.Parcelable;
  */
 public class Player implements Parcelable {
     public static final String INTENT_EXTRA_ID = "PLAYER_INTENT_EXTRA";
+    private Bitmap mScaledBitmap = null;
+    public Matrix mMatrix;
+    private Bitmap mBitmap;
 
     public Player(long id, String imageLocation, int color, String name) {
         this.id = id;
@@ -102,5 +109,34 @@ public class Player implements Parcelable {
                 Math.min((int) (strength * (float) Color.red(color)), 0xff),
                 Math.min((int) (strength * (float) Color.green(color)), 0xff),
                 Math.min((int) (strength * (float) Color.blue(color)), 0xff));
+    }
+
+    public Bitmap getBitmap() {
+        if (mBitmap == null)
+         mBitmap = getBitmap(getImageLocation());
+
+        return mBitmap;
+    }
+
+    public static Bitmap getBitmap(String path) {
+        Bitmap image = BitmapFactory.decodeFile(path);
+
+        if (image != null) {
+            Bitmap thumbImage = ThumbnailUtils.extractThumbnail(image,
+                    192, 192);
+        }
+
+        return image;
+    }
+
+    public boolean hasBitmap() {
+        return getBitmap() != null;
+    }
+
+    public Bitmap getScaledBitmap(RectF bounds) {
+        if (mScaledBitmap == null)
+            mScaledBitmap = Bitmap.createScaledBitmap(getBitmap(), (int) bounds.width(), (int)bounds.height(), true);
+
+        return mScaledBitmap;
     }
 }

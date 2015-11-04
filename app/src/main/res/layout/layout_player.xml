@@ -9,35 +9,63 @@
     android:layout_height="250dp"
     card_view:cardCornerRadius="10dp"
     android:layout_margin="20dp"
+    android:padding="100dp"
     android:elevation="10dp">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
-        <TextView
+        android:orientation="vertical"
+        android:padding="10dp">
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="24dp"
-            android:gravity="center|top"
-            android:text="Take a selfie"
-            android:onClick="takePicture"
-            android:id="@+id/actionText"/>
+            android:orientation="horizontal">
+            <Switch
+                android:id="@+id/mySwitch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:gravity="left" />
+            <View
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
+            <ImageButton
+                android:id="@+id/popup_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="showPopup"
+                android:layout_gravity="right"
+                android:background="@android:color/transparent"
+                android:src="@drawable/ic_menu_moreoverflow_normal_holo_light"/>
+        </LinearLayout>
         <ImageView
             android:layout_margin="20dp"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
+            android:layout_width="250dp"
+            android:layout_gravity="center"
+            android:layout_height="100dp"
             android:layout_weight="1"
             android:src="@drawable/ic_camera_alt_black_48dp"
             android:gravity="center"
-            android:onClick="takePicture"
             android:id="@+id/actionImage"/>
-        <EditText
-            android:id="@+id/name"
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Name"
-            android:gravity="bottom"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"/>
+            android:layout_height="wrap_content">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:textSize="24dp"
+                android:gravity="bottom|left"
+                android:text="Name Here"
+                android:id="@+id/actionText"/>
+            <View android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:id="@+id/playerColor"
+                android:layout_gravity="right"
+                android:background="@drawable/player_color" />
+        </LinearLayout>
+
 </LinearLayout>
 </android.support.v7.widget.CardView>

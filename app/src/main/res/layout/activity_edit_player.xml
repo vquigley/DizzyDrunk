@@ -1,33 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:clipToPadding="false"
-    tools:context="com.grangewood.dizzydrunk.activity.EditPlayer"
-    android:background="@color/background">
+    android:background="@color/background"
+    android:orientation="vertical"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <include layout="@layout/layout_player" />
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:background="@drawable/edit_background">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="ADD PLAYER"
+                android:gravity="center"
+                android:textSize="@dimen/text_size"/>
+        </FrameLayout>
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/savePlayer"
-        android:src="@drawable/ic_done_black_24dp"
-        app:fabSize="normal"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:backgroundTint="@color/appPrimary"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_margin="@dimen/fab_margin"
-        android:clickable="true"
-        app:elevation="6dp"
-        app:pressedTranslationZ="12dp"
-        app:rippleColor="@color/appPrimaryDark"
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/edit_background">
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/text_size"
+                android:hint="Name"
+                android:id="@+id/name"
+                />
+        </FrameLayout>
 
-        />
-</RelativeLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:layout_marginTop="30dp"
+            android:orientation="vertical"
+            android:background="@drawable/edit_background">
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:layout_weight="1"
+                android:src="@drawable/ic_camera_alt_black_48dp"
+                android:gravity="center"
+                android:onClick="takePicture"
+                android:id="@+id/actionImage"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Take a selfie"
+                android:gravity="center"
+                android:textSize="@dimen/text_size"
+                android:id="@+id/selfieText"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:layout_marginTop="30dp"
+            android:background="@drawable/edit_background">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="Select Color"
+                android:textSize="@dimen/text_size"
+                android:layout_gravity="left|center"/>
+            <View android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:id="@+id/playerColor"
+                android:background="@drawable/player_color" />
+        </LinearLayout>
+
+        <Button
+            android:layout_marginTop="30dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="SAVE"
+            android:background="@drawable/action_button"
+            android:id="@+id/savePlayer"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/text_size"/>
+    </LinearLayout>

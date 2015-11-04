@@ -6,21 +6,26 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
 import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.SweepGradient;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.Scroller;
 
 import com.grangewood.dizzydrunk.R;
@@ -50,6 +55,7 @@ public class WheelView extends ViewGroup {
     private float mTextWidth = 0.0f;
     private float mTextHeight = 0.0f;
     private int mTextPos = TEXTPOS_LEFT;
+    private float mPointerWidth = 40;
 
     private float mHighlightStrength = 1.15f;
 
@@ -87,6 +93,12 @@ public class WheelView extends ViewGroup {
      * Draw text to the right of the pie chart
      */
     public static final int TEXTPOS_RIGHT = 1;
+
+
+    /**
+     * Draw text above the pie chart
+     */
+    public static final int TEXTPOS_TOP = 2;
 
     /**
      * The initial fling velocity is divided by this amount.
@@ -150,7 +162,7 @@ public class WheelView extends ViewGroup {
             //
             // The R.styleable.PieChart_* constants represent the index for
             // each custom attribute in the R.styleable.PieChart array.
-            mShowText = a.getBoolean(R.styleable.WheelView_showText, false);
+            mShowText = a.getBoolean(R.styleable.WheelView_showName, false);
             mTextY = a.getDimension(R.styleable.WheelView_labelY, 0.0f);
             mTextWidth = a.getDimension(R.styleable.WheelView_labelWidth, 0.0f);
             mTextHeight = a.getDimension(R.styleable.WheelView_labelHeight, 0.0f);
@@ -160,6 +172,7 @@ public class WheelView extends ViewGroup {
             mPieRotation = a.getInt(R.styleable.WheelView_pieRotation, 0);
             mPointerRadius = a.getDimension(R.styleable.WheelView_pointerRadius, 2.0f);
             mAutoCenterInSlice = a.getBoolean(R.styleable.WheelView_autoCenterPointerInSlice, false);
+            mPointerWidth = a.getDimension(R.styleable.WheelView_pointerWidth, 0.0f);
         } finally {
             // release the TypedArray so that it can be reused.
             a.recycle();
@@ -251,7 +264,7 @@ public class WheelView extends ViewGroup {
      * Returns a value that specifies whether the label text is to the right
      * or the left of the pie chart graphic.
      *
-     * @return One of TEXTPOS_LEFT or TEXTPOS_RIGHT.
+     * @return One of TEXTPOS_LEFT or TEXTPOS_RIGHT or TEXTPOS_TOP.
      */
     public int getTextPos() {
         return mTextPos;
@@ -262,12 +275,13 @@ public class WheelView extends ViewGroup {
      * or the left of the pie chart graphic.
      *
      * @param textPos TEXTPOS_LEFT to draw the text to the left of the graphic,
-     *                or TEXTPOS_RIGHT to draw the text to the right of the graphic.
+     *                or TEXTPOS_RIGHT to draw the text to the right of the graphic,
+     *                pr TEXTPOS_TOP to draw the text on the top of the graphic
      */
     public void setTextPos(int textPos) {
-        if (textPos != TEXTPOS_LEFT && textPos != TEXTPOS_RIGHT) {
+        if (textPos != TEXTPOS_LEFT && textPos != TEXTPOS_RIGHT && textPos != TEXTPOS_TOP) {
             throw new IllegalArgumentException(
-                    "TextPos must be one of TEXTPOS_LEFT or TEXTPOS_RIGHT");
+                    "TextPos must be one of TEXTPOS_LEFT or TEXTPOS_RIGHT or TEXTPOS_TOP");
         }
         mTextPos = textPos;
         invalidate();
@@ -419,9 +433,9 @@ public class WheelView extends ViewGroup {
 
     public void setData(ArrayList<Player> list) {
         mData = list;
+        mTotal = list.size();
         onDataChanged();
     }
-
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -454,7 +468,7 @@ public class WheelView extends ViewGroup {
         super.onDraw(canvas);
 
         // Draw the shadow
-        canvas.drawOval(mShadowBounds, mShadowPaint);
+        //canvas.drawOval(mShadowBounds, mShadowPaint);
 
         // Draw the label text
         if (getShowText()) {
@@ -478,7 +492,10 @@ public class WheelView extends ViewGroup {
     //
     @Override
     protected int getSuggestedMinimumWidth() {
-        return (int) mTextWidth * 2;
+        if (mTextPos != TEXTPOS_TOP)
+            return (int) mTextWidth * 2;
+        else
+            return 0;
     }
 
     @Override
@@ -495,8 +512,8 @@ public class WheelView extends ViewGroup {
 
         // Whatever the width ends up being, ask for a height that would let the pie
         // get as big as it can
-        int minh = (w - (int) mTextWidth) + getPaddingBottom() + getPaddingTop();
-        int h = Math.min(MeasureSpec.getSize(heightMeasureSpec), minh);
+        int minh = ((int) mTextHeight * 2) + getPaddingBottom() + getPaddingTop();
+        int h = Math.max(MeasureSpec.getSize(heightMeasureSpec), minh);
 
         setMeasuredDimension(w, h);
     }
@@ -523,38 +540,30 @@ public class WheelView extends ViewGroup {
         mPieBounds = new RectF(
                 0.0f,
                 0.0f,
-                diameter,
+                diameter ,
                 diameter);
-        mPieBounds.offsetTo(getPaddingLeft(), getPaddingTop());
 
-        mPointerY = mTextY - (mTextHeight / 2.0f);
-        float pointerOffset = mPieBounds.centerY() - mPointerY;
+        if (mTextPos == TEXTPOS_TOP)
+            mPieBounds.offsetTo(getPaddingLeft(), hh / 2 - diameter / 2);
+        else
+            mPieBounds.offsetTo(getPaddingLeft(), getPaddingTop());
+
+        mPointerY = mTextY - (mTextHeight / 2.0f) + hh / 2 - diameter / 2;
+        float pointerOffset = 0;
+
+//        if (mTextPos != TEXTPOS_TOP) {
+            pointerOffset = mPieBounds.centerY() - mPointerY;
+        //}
 
         // Make adjustments based on text position
         if (mTextPos == TEXTPOS_LEFT) {
-            mTextPaint.setTextAlign(Paint.Align.RIGHT);
-            if (mShowText) mPieBounds.offset(mTextWidth, 0.0f);
-            mTextX = mPieBounds.left;
-
-            if (pointerOffset < 0) {
-                pointerOffset = -pointerOffset;
-                mCurrentItemAngle = 225;
-            } else {
-                mCurrentItemAngle = 135;
-            }
-            mPointerX = mPieBounds.centerX() - pointerOffset;
+            PositionTextLeft(pointerOffset);
+        } else if (mTextPos == TEXTPOS_RIGHT ) {
+            PositionTextRight(pointerOffset);
         } else {
-            mTextPaint.setTextAlign(Paint.Align.LEFT);
-            mTextX = mPieBounds.right;
-
-            if (pointerOffset < 0) {
-                pointerOffset = -pointerOffset;
-                mCurrentItemAngle = 315;
-            } else {
-                mCurrentItemAngle = 45;
-            }
-            mPointerX = mPieBounds.centerX() + pointerOffset;
+            PositionTextAbove(pointerOffset);
         }
+
 
         mShadowBounds = new RectF(
                 mPieBounds.left + 10,
@@ -562,7 +571,7 @@ public class WheelView extends ViewGroup {
                 mPieBounds.right - 10,
                 mPieBounds.bottom + 20);
 
-        // Lay out the child view that actually draws the pie.
+
         mPieView.layout((int) mPieBounds.left,
                 (int) mPieBounds.top,
                 (int) mPieBounds.right,
@@ -570,7 +579,64 @@ public class WheelView extends ViewGroup {
         mPieView.setPivot(mPieBounds.width() / 2, mPieBounds.height() / 2);
 
         mPointerView.layout(0, 0, w, h);
+
+        for (Player it : mData) {
+            if (it.hasBitmap() == false)
+                break;
+
+            double arcCircumfrance = Math.PI * 2.0 * mPieBounds.width();
+            RectF bitmapBounds = new RectF(
+                    0.0F,
+                    mPieBounds.height() / 2.0F * 0.9F,
+                    (float)arcCircumfrance,
+                    0.0F);
+            Bitmap bit = it.getScaledBitmap(bitmapBounds);
+
+            Matrix matrix = new Matrix();
+            matrix.postTranslate(mPieBounds.width() / 2 - bit.getWidth() /2, mPieBounds.height() / 2 - bit.getHeight() / 2);
+            matrix.postTranslate(0, -mPieBounds.height() / 4);
+            float angle = it.mStartAngle + (it.mEndAngle - it.mStartAngle ) / 2;
+            matrix.postRotate(angle, mPieBounds.width() / 2, mPieBounds.height() / 2);
+            Log.d("On Size Changed", it.getName() + " : " + angle);
+// + (it.mStartAngle + (it.mEndAngle - it.mStartAngle )) * -1 / 2
+            it.mMatrix = matrix;
+        }
+
         onDataChanged();
+    }
+
+    private void PositionTextAbove(float pointerOffset) {
+        mTextPaint.setTextAlign(Paint.Align.CENTER);
+        mTextX = mPieBounds.centerX();
+        mCurrentItemAngle = 90;
+        mPointerX = mPieBounds.centerX();
+    }
+
+    private void PositionTextRight(float pointerOffset) {
+        mTextPaint.setTextAlign(Paint.Align.LEFT);
+        mTextX = mPieBounds.right;
+
+        if (pointerOffset < 0) {
+            pointerOffset = -pointerOffset;
+            mCurrentItemAngle = 315;
+        } else {
+            mCurrentItemAngle = 45;
+        }
+        mPointerX = mPieBounds.centerX() + pointerOffset;
+    }
+
+    private void PositionTextLeft(float pointerOffset) {
+        mTextPaint.setTextAlign(Paint.Align.RIGHT);
+        if (mShowText) mPieBounds.offset(mTextWidth, 0.0f);
+        mTextX = mPieBounds.left;
+
+        if (pointerOffset < 0) {
+            pointerOffset = -pointerOffset;
+            mCurrentItemAngle = 225;
+        } else {
+            mCurrentItemAngle = 135;
+        }
+        mPointerX = mPieBounds.centerX() - pointerOffset;
     }
 
     /**
@@ -601,7 +667,6 @@ public class WheelView extends ViewGroup {
             it.mStartAngle = currentAngle;
             it.mEndAngle = (int) ((float) currentAngle + it.mValue * 360.0f / mTotal);
             currentAngle = it.mEndAngle;
-
 
             // Recalculate the gradient shaders. There are
             // three values in this gradient, even though only
@@ -726,12 +791,16 @@ public class WheelView extends ViewGroup {
         // In edit mode it's nice to have some demo data, so add that here.
         if (this.isInEditMode()) {
             Resources res = getResources();
-            addItem(new Player(1, "", Color.RED, "Brunhilde"));
-            addItem(new Player(2, "", Color.BLUE, "Carolina"));
-            addItem(new Player(3, "", Color.CYAN, "Dahlia"));
-            addItem(new Player(4, "", Color.GREEN, "Ekaterina"));
-        }
+            //addItem(new Player(1, "", Color.RED, "Brunhilde"));
+            //addItem(new Player(2, "", Color.BLUE, "Carolina"));
+            //addItem(new Player(3, "", Color.CYAN, "Dahlia"));
+            //addItem(new Player(4, "", Color.GREEN, "Ekaterina"));
 
+            addItem(new Player(1, "android.resource://com.grangewood.dizzydrunk/emoti_02_sad_256.png", Color.RED, "Brunhilde"));
+            addItem(new Player(2, "android.resource://com.grangewood.dizzydrunk/emoti_02_sad_256.png", Color.BLUE, "Carolina"));
+            addItem(new Player(3, "android.resource://com.grangewood.dizzydrunk/emoti_02_sad_256.png", Color.CYAN, "Dahlia"));
+            addItem(new Player(4, "android.resource://com.grangewood.dizzydrunk/emoti_02_sad_256.png", Color.GREEN, "Ekaterina"));
+        }
     }
 
     private void tickScrollAnimation() {
@@ -787,6 +856,7 @@ public class WheelView extends ViewGroup {
      */
     private void centerOnCurrentItem() {
         Player current = mData.get(getCurrentItem());
+        Log.d("createCenter: ", current.getName());
         float targetAngle = current.mStartAngle + (current.mEndAngle - current.mStartAngle) / 2;
         targetAngle -= mCurrentItemAngle;
         if (targetAngle < 90 && mPieRotation > 180) targetAngle += 360;
@@ -850,6 +920,10 @@ public class WheelView extends ViewGroup {
                         360 - it.mEndAngle,
                         it.mEndAngle - it.mStartAngle,
                         true, mPiePaint);
+
+
+                if (it.hasBitmap())
+                    canvas.drawBitmap(it.getScaledBitmap(mPieBounds), it.mMatrix, mPiePaint );
             }
         }
 
@@ -885,7 +959,6 @@ public class WheelView extends ViewGroup {
      * View that draws the pointer on top of the pie chart
      */
     private class PointerView extends View {
-
         /**
          * Construct a PointerView object
          *
@@ -897,7 +970,13 @@ public class WheelView extends ViewGroup {
 
         @Override
         protected void onDraw(Canvas canvas) {
-            canvas.drawLine(mTextX, mPointerY, mPointerX, mPointerY, mTextPaint);
+            Path path = new Path();
+            path.moveTo(mTextX + mPointerWidth / 2, mTextY);
+            path.lineTo(mPointerX, mPointerY);
+            path.lineTo(mTextX - mPointerWidth/2, mTextY);
+            path.close();
+
+            canvas.drawPath(path, mTextPaint);
             canvas.drawCircle(mPointerX, mPointerY, mPointerRadius, mTextPaint);
         }
     }

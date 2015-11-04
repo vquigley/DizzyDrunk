@@ -1,5 +1,12 @@
 package com.grangewood.dizzydrunk.data;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.RectF;
+import android.graphics.drawable.GradientDrawable;
+import android.media.ThumbnailUtils;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -31,12 +38,17 @@ public class PlayersAdaptor extends RecyclerView.Adapter<PlayersAdaptor.ViewHold
         public TextView textView;
         public ImageView imageView;
         public CardView cardView;
+        public View playerColor;
+        public ImageView menuView;
+
 
         public ViewHolder(View itemLayoutView) {
             super(itemLayoutView);
             textView = (TextView) itemLayoutView.findViewById(R.id.actionText);
             imageView = (ImageView) itemLayoutView.findViewById(R.id.actionImage);
-            cardView = (CardView) itemView.findViewById(R.id.card_view);
+            cardView = (CardView) itemLayoutView.findViewById(R.id.card_view);
+            playerColor = itemLayoutView.findViewById(R.id.playerColor);
+            menuView = (ImageView)itemLayoutView.findViewById(R.id.popup_icon);
         }
     }
 
@@ -54,6 +66,11 @@ public class PlayersAdaptor extends RecyclerView.Adapter<PlayersAdaptor.ViewHold
     public void onBindViewHolder(ViewHolder holder, int position) {
         Player p = playerList.get(position);
         holder.textView.setText(p.getName());
+        ((GradientDrawable)holder.playerColor.getBackground()).setColor(p.getColor());
+
+        holder.imageView.setImageBitmap(p.getBitmap());
+
+        holder.menuView.setTag(position);
     }
 
 

@@ -17,12 +17,14 @@
         <attr name="labelPosition" format="enum">
             <enum name="left" value="0"/>
             <enum name="right" value="1"/>
+            <enum name="top" value="2"/>
         </attr>
         <attr name="labelWidth" format="dimension"/>
         <attr name="labelY" format="dimension"/>
         <attr name="pieRotation" format="integer"/>
         <attr name="pointerRadius" format="dimension"/>
-        <attr name="showText" format="boolean"/>
+        <attr name="showName" format="boolean"/>
+        <attr name="pointerWidth" format="dimension"/>
     </declare-styleable>
 
 </resources>
